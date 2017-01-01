@@ -1,0 +1,7 @@
+{
+    "tls": {
+        "verifyHost": true,
+        "verifyCertificates": false,
+        "certificates": "openbsd"
+    }
+}

@@ -1,0 +1,7 @@
+{
+	"key": "$VAPOR_APP_KEY",
+    "google_client_key": "$GOOGLE_CLIENT_KEY",
+    "google_client_secret": "$GOOGLE_CLIENT_SECRET",
+    "facebook_client_key": "$FACEBOOK_CLIENT_KEY",
+    "facebook_client_secret": "$FACEBOOK_CLIENT_SECRET"
+}
