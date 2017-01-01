@@ -44,7 +44,8 @@ public class RootCollection: RouteCollection {
         root.collection(homeCollection)
         
         root.get("/documentation") { req in
-            return try self.drop.view.make("documentation")
+            let user = try? req.user()
+            return try self.drop.view.make("documentation", ["authenticated": user != nil])
         }
         
         let chatCollection = ChatCollection(drop: drop)
