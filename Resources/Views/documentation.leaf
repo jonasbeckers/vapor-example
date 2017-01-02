@@ -1,0 +1,29 @@
+#extend("base")
+
+#export("body") {
+	<h1>Api documentation</h1>
+	
+	<h3>Owners</h3>
+	<ul class="list-group">
+		<li class="list-group-item">GET api/v1/owners</li>
+		<li class="list-group-item">GET api/v1/owners/1</li>
+		<li class="list-group-item">POST api/v1/owners</li>
+		<li class="list-group-item">PUT api/v1/owners/1</li>
+		<li class="list-group-item">DELETE api/v1/owners</li>
+		<li class="list-group-item">DELETE api/v1/owners/1</li>
+	</ul>
+	<h3>Pets</h3>
+	<ul class="list-group">
+		<li class="list-group-item">GET api/v1/pets</li>
+		<li class="list-group-item">GET api/v1/pets/1</li>
+		<li class="list-group-item">POST api/v1/pets</li>
+		<li class="list-group-item">DELETE api/v1/pets/1</li>
+	</ul>
+	<h3>Toys</h3>
+	<ul class="list-group">
+		<li class="list-group-item">GET api/v1/toys</li>
+		<li class="list-group-item">GET api/v1/toys/1</li>
+		<li class="list-group-item">POST api/v1/toys</li>
+		<li class="list-group-item">DELETE api/v1/toys/1</li>
+	</ul>
+}
