@@ -34,24 +34,26 @@ public func addPreparations(_ drop: Droplet) {
 public func addProviders(_ drop: Droplet) throws {
     try drop.addProvider(VaporMySQL.Provider.self)
     try drop.addProvider(VaporRedis.Provider(config: drop.config))
-    drop.addProvider(SwiftyBeaverProvider(destinations: destinations()))
+    drop.addProvider(SwiftyBeaverProvider(destinations: destinations(drop: drop)))
 }
 
-public func destinations() -> [BaseDestination] {
+public func destinations(drop: Droplet) -> [BaseDestination] {
     var destinations = [BaseDestination]()
+    
     let console = ConsoleDestination()
     destinations += console
     let file = FileDestination()
     destinations += file
     file.logFileURL = URL(fileURLWithPath: "/tmp/VaporLogs.log")
-    if let cloud = cloudLocation() {
+    
+    if let cloud = cloudLocation(drop: drop) {
         destinations += cloud
     }
     return destinations
 }
 
-public func cloudLocation() -> SBPlatformDestination? {
-    guard let appID = drop.config["swiftybeaver", "appId"]?.string, let appSecret = drop.config["swiftybeaver", "appSecret"]?.string, let encryptionKey = drop.config["swiftybeaver", "encryptionKey"]?.string else {
+public func cloudLocation(drop: Droplet) -> SBPlatformDestination? {
+    guard let appID = drop.config["swiftybeaver", "appID"]?.string, let appSecret = drop.config["swiftybeaver", "appSecret"]?.string, let encryptionKey = drop.config["swiftybeaver", "encryptionKey"]?.string else {
         return nil
     }
     
