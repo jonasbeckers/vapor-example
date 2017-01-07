@@ -86,16 +86,22 @@ class HomeControllerTests: XCTestCase {
     func testLogout() throws {
         let drop = try makeTestDroplet()
         
-        let body = Body("username=tom&password=123")
+                let body = Body("username=tom&password=123")
+        let registerRequest = try Request(method: .post, uri: "\(base)/register", body: body)
+        registerRequest.headers["Content-type"] = "application/x-www-form-urlencoded"
+        _ = try drop.respond(to: registerRequest)
+        
+
         let loginRequest = try Request(method: .post, uri: "\(base)/login", body: body)
         loginRequest.headers["Content-type"] = "application/x-www-form-urlencoded"
 
-        _ = try drop.respond(to: loginRequest)
+        let loginResponse = try drop.respond(to: loginRequest)
+        XCTAssertEqual(loginResponse.status.statusCode, 302)
         
         let request = try Request(method: .post, uri: "\(base)/logout")
         let response = try drop.respond(to: request)
         
-        XCTAssertEqual(response.status.statusCode, 302)
+        XCTAssertEqual(response.status.statusCode, 302, try! response.body.bytes!.string())
         
         try User.deleteAll()
     }

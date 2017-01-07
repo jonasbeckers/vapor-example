@@ -51,7 +51,7 @@ final class Hometroller {
         var dashboardView = try Node(node: ["authenticated": user != nil])
         dashboardView["account"] = try user?.makeNode()
         
-        log.info("Opening dashboard for \(user?.username ?? "not logged in")")
+        log.debug("Opening dashboard for \(user?.username ?? "not logged in")")
         
         return try drop.view.make("index", dashboardView)
     }
@@ -64,14 +64,14 @@ final class Hometroller {
         if let credentials = getCredentials(request: request) {
             do {
                 try request.auth.login(credentials, persist: true)
-                log.info("Succesfull login for \(credentials.username)")
+                log.debug("Succesfull login for \(credentials.username)")
                 return Response(redirect: "/")
             } catch {
-                log.info("Incorrect password or username for \(credentials.username)")
+                log.debug("Incorrect password or username for \(credentials.username)")
                 return try drop.view.make("login", ["message": "Invalid username or password"])
             }
         } else {
-            log.info("Missing username or password for login")
+            log.debug("Missing username or password for login")
             return try drop.view.make("login", ["message": "Missing username or password"])
         }
     }
@@ -81,6 +81,9 @@ final class Hometroller {
             let state = URandom().secureToken
             let response = Response(redirect: google.getLoginLink(redirectURL: request.baseURL + "/login/google/consumer", state: state).absoluteString)
             response.cookies["OAuthState"] = state
+            
+            log.info("Using google login")
+            
             return response
         } else {
             log.error("Google service unavailable")
@@ -97,7 +100,7 @@ final class Hometroller {
             let account = try google.authenticate(authorizationCodeCallbackURL: request.uri.description, state: state) as! GoogleAccount
             try request.auth.login(account)
             
-            log.info("Succesfull google login for \(account.uniqueID)")
+            log.debug("Succesfull google login for \(account.uniqueID)")
             
             return Response(redirect: "/")
         } else {
@@ -111,6 +114,9 @@ final class Hometroller {
             let state = URandom().secureToken
             let response = Response(redirect: facebook.getLoginLink(redirectURL: request.baseURL + "/login/facebook/consumer", state: state).absoluteString)
             response.cookies["OAuthState"] = state
+            
+            log.info("Using facebook login")
+            
             return response
         } else {
             log.error("Facebook service unavailable")
@@ -127,7 +133,7 @@ final class Hometroller {
             let account = try facebook.authenticate(authorizationCodeCallbackURL: request.uri.description, state: state) as! FacebookAccount
             try request.auth.login(account)
             
-            log.info("Succesfull facebook login for \(account.uniqueID)")
+            log.debug("Succesfull facebook login for \(account.uniqueID)")
             
             return Response(redirect: "/")
         } else {
@@ -147,7 +153,7 @@ final class Hometroller {
                 _ = try User.register(credentials: credentials)
                 try request.auth.login(credentials)
                 
-                log.info("Succesfull register for \(credentials.username)")
+                log.debug("Succesfull register for \(credentials.username)")
                 
                 return Response(redirect: "/")
             } catch let error as TurnstileError {
@@ -156,16 +162,13 @@ final class Hometroller {
             }
         }
         
-        log.info("Missing username or password register")
+        log.debug("Missing username or password register")
         
         return try drop.view.make("register", ["message": "Missing username or password"])
     }
     
     func logout(_ request: Request) throws -> ResponseRepresentable {
-        log.info("Logging out user \(try request.auth.user().uniqueID)")
-        
         try request.auth.logout()
-        
         return Response(redirect: "/")
     }
     
