@@ -1,5 +1,6 @@
 import Vapor
 import Library
+import SwiftyBeaver
 
 let drop = Droplet()
 

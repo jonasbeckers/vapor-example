@@ -19,6 +19,7 @@ import Foundation
 final class Hometroller {
     
     let drop: Droplet
+    let log: LogProtocol
     
     var google: Google?
     var facebook: Facebook?
@@ -27,15 +28,20 @@ final class Hometroller {
         self.drop = drop
         self.google = nil
         self.facebook = nil
+        self.log = drop.log.self
         initRealms()
     }
     
     func initRealms() {
         if let google_client_id = drop.config["app", "google_client_key"]?.string, let google_client_secret = drop.config["app", "google_client_secret"]?.string {
             google = Google(clientID: google_client_id, clientSecret: google_client_secret)
+        } else {
+            log.warning("Google client key and/or secret not found")
         }
         if let facebook_client_id = drop.config["app", "facebook_client_key"]?.string, let facebook_client_secret = drop.config["app", "facebook_client_secret"]?.string {
             facebook = Facebook(clientID: facebook_client_id, clientSecret: facebook_client_secret)
+        } else {
+            log.warning("Facebook client key and/or secret not found")
         }
     }
     
@@ -44,6 +50,8 @@ final class Hometroller {
         
         var dashboardView = try Node(node: ["authenticated": user != nil])
         dashboardView["account"] = try user?.makeNode()
+        
+        log.info("Opening dashboard for \(user?.username ?? "not logged in")")
         
         return try drop.view.make("index", dashboardView)
     }
@@ -56,11 +64,14 @@ final class Hometroller {
         if let credentials = getCredentials(request: request) {
             do {
                 try request.auth.login(credentials, persist: true)
+                log.info("Succesfull login for \(credentials.username)")
                 return Response(redirect: "/")
             } catch {
+                log.info("Incorrect password or username for \(credentials.username)")
                 return try drop.view.make("login", ["message": "Invalid username or password"])
             }
         } else {
+            log.info("Missing username or password for login")
             return try drop.view.make("login", ["message": "Missing username or password"])
         }
     }
@@ -72,6 +83,7 @@ final class Hometroller {
             response.cookies["OAuthState"] = state
             return response
         } else {
+            log.error("Google service unavailable")
             throw Abort.custom(status: .serviceUnavailable, message: "Google login currently unavailable")
         }
     }
@@ -84,8 +96,12 @@ final class Hometroller {
             
             let account = try google.authenticate(authorizationCodeCallbackURL: request.uri.description, state: state) as! GoogleAccount
             try request.auth.login(account)
+            
+            log.info("Succesfull google login for \(account.uniqueID)")
+            
             return Response(redirect: "/")
         } else {
+            log.error("Google service unavailable")
             throw Abort.custom(status: .serviceUnavailable, message: "Google login currently unavailable")
         }
     }
@@ -97,6 +113,7 @@ final class Hometroller {
             response.cookies["OAuthState"] = state
             return response
         } else {
+            log.error("Facebook service unavailable")
             throw Abort.custom(status: .serviceUnavailable, message: "Facebook login currently unavailable")
         }
     }
@@ -109,8 +126,12 @@ final class Hometroller {
             
             let account = try facebook.authenticate(authorizationCodeCallbackURL: request.uri.description, state: state) as! FacebookAccount
             try request.auth.login(account)
+            
+            log.info("Succesfull facebook login for \(account.uniqueID)")
+            
             return Response(redirect: "/")
         } else {
+            log.error("Facebook service unavailable")
             throw Abort.custom(status: .serviceUnavailable, message: "Google login currently unavailable")
         }
     }
@@ -125,16 +146,26 @@ final class Hometroller {
             do {
                 _ = try User.register(credentials: credentials)
                 try request.auth.login(credentials)
+                
+                log.info("Succesfull register for \(credentials.username)")
+                
                 return Response(redirect: "/")
             } catch let error as TurnstileError {
+                log.error("Error while registering for user \(credentials.username) with error \(error.description)")
                 return try drop.view.make("register", ["message": error.description])
             }
         }
+        
+        log.info("Missing username or password register")
+        
         return try drop.view.make("register", ["message": "Missing username or password"])
     }
     
     func logout(_ request: Request) throws -> ResponseRepresentable {
+        log.info("Logging out user \(try request.auth.user().uniqueID)")
+        
         try request.auth.logout()
+        
         return Response(redirect: "/")
     }
     

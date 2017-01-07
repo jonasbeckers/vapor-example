@@ -12,6 +12,8 @@ import Fluent
 import Foundation
 import VaporRedis
 import Library
+import SwiftyBeaver
+import SwiftyBeaverVapor
 
 public func load(_ drop: Droplet) throws {
     addPreparations(drop)
@@ -32,6 +34,11 @@ public func addPreparations(_ drop: Droplet) {
 public func addProviders(_ drop: Droplet) throws {
     try drop.addProvider(VaporMySQL.Provider.self)
     try drop.addProvider(VaporRedis.Provider(config: drop.config))
+    let console = ConsoleDestination()
+    let file = FileDestination()
+    file.logFileURL = URL(fileURLWithPath: "/tmp/VaporLogs.log")
+    let cloud = SBPlatformDestination(appID: "9Gz0m2", appSecret: "NFEaoh4ihO9pbscvuqw9nydn6xfvK4pt", encryptionKey: "gdssBjmmdgiyzunvzeywfasdxeuha3qz")
+    drop.addProvider(SwiftyBeaverProvider(destinations: [console, file, cloud]))
 }
 
 public func addCommands(_ drop: Droplet) {
