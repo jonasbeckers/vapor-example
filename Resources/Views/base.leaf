@@ -30,7 +30,6 @@
 					  #(message)
 					</div>
 				}
-				<p>#(request.sessions.data.user.name)</p>
 			</div>
 			#import("body")
 		</div>
